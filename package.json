@@ -1,0 +1,18 @@
+{
+  "name": "add-to-your-project",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "e2e:proj:install": "cd end-to-end && npm install",
+    "e2e:proj:download_last_apps_with": "cd end-to-end && npm run e2e:proj:download_last_apps_with codemagic $YOUR_CM_TOKEN $YOUR_CM_APP_ID",
+    "e2e:browserstack:run:local": "cd end-to-end && npm run e2e:browserstack:run:local",
+    "e2e:simulator:run:local": "cd end-to-end && npm run e2e:simulator:run:local",
+    "e2e:simulator:ios_list": "cd end-to-end && npm run e2e:simulator:ios_list",
+    "e2e:simulator:android_list": "cd end-to-end && npm run e2e:simulator:android_list",
+    "e2e:simulator:android_start_emulator": "cd end-to-end && npm run e2e:simulator:android_start_emulator",
+    "e2e:dev:prettier": "cd end-to-end && npm run dev:prettier",
+    "e2e:dev:prettier:check": "cd end-to-end && npm run dev:prettier:check",
+    "e2e:dev:prettier:fix": "cd end-to-end && npm run dev:prettier:fix",
+    "e2e:browserstack:software:browserstacklocal": "cd end-to-end && npm run e2e:browserstack:software:browserstacklocal $BS_ACCESS_KEY"
+  }
+}

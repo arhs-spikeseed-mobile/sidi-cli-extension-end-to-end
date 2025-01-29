@@ -1,0 +1,13 @@
+# OSX
+#
+.DS_Store
+
+
+node_modules
+
+tmp
+*.tmp
+local.log
+
+package-lock.json
+yarn.lock

@@ -1,0 +1,22 @@
+# OSX
+#
+.DS_Store
+
+
+node_modules
+
+tmp
+*.tmp
+local.log
+
+*.apk
+*.aab
+*.ipa
+*.csv
+*.txt
+*.json
+*.xml
+*.html
+*.pdf
+*.png
+*.backup

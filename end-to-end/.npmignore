@@ -1,0 +1,17 @@
+src
+setup
+.vscode
+.idea
+coverage
+example
+ios
+android
+scripts
+shell
+src
+codemagic.yml
+.codemagic-secret.conf
+.gitlab-ci.yml
+.watchmanconfig
+.eslintignore
+yarn.lock
