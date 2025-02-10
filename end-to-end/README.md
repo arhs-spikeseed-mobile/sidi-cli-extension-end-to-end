@@ -94,7 +94,7 @@ Make your test implementation easier and more efficient by leveraging the `e2ehe
 
 To enable the execution of test suites on BrowserStack, the `sidi-cli` requires a properly structured `browserstack_config.json` file. This configuration file will be read by the CI/CD pipeline to set up test execution.
 
-[CI/CD Configuration Documentation](doc/cicd_configuration.md)
+[CI/CD Configuration Documentation](https://github.com/arhs-spikeseed-mobile/sidi-cli/blob/develop/docs/end-to-end-setup.md)
 
 ---
 
