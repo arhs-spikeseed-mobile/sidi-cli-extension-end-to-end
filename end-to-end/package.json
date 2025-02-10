@@ -27,6 +27,7 @@
     "@rpii/wdio-html-reporter-pdf": "^8.0.7",
     "@types/node": "22.10.2",
     "@wdio/appium-service": "9.4.2",
+    "@wdio/browserstack-service": "9.4.2",
     "@wdio/cli": "9.4.2",
     "@wdio/globals": "9.4.2",
     "@wdio/junit-reporter": "9.4.2",

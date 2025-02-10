@@ -159,7 +159,7 @@ mv "${WDIO_CONFIG_TEMP_PATH}.modified" "$WDIO_CONFIG_TEMP_PATH"
 
 # Run tests
 log_info "Starting WDIO tests with configuration: $WDIO_CONFIG_TEMP_PATH"
-npx wdio "$WDIO_CONFIG_TEMP_PATH" --logLevel=debug
+npx wdio "$WDIO_CONFIG_TEMP_PATH" --logLevel=trace
 
 if [[ $? -eq 0 ]]; then
   log_success "WDIO tests executed successfully!"

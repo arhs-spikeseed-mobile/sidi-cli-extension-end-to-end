@@ -47,6 +47,7 @@ exports.config = {
       "appium:nativeWebScreenshot": true,
       "appium:newCommandTimeout": 3600,
       "appium:connectHardwareKeyboard": true,
+      "appium:settings[enforceXPath1]": true,
       "proj:options": {
         build_url: process.env.BUILD_URL,
         build_number: process.env.BUILD_NUMBER,

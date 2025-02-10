@@ -109,12 +109,11 @@ export async function swipe({ start, end, duration = 200 }) {
           { type: 'pointerMove', duration: 0, x: start.x, y: start.y },
           { type: 'pointerDown', button: 0 },
           { type: 'pause', duration },
-          { type: 'pointerMove', duration: 0, x: end.x, y: end.y },
-          { type: 'pointerUp', button: 0 },
+          { type: 'pointerMove', duration: 2000, origin: 'pointer', x: end.x, y: end.y },
+          { type: 'pointerUp', button: 0 }
         ],
       },
     ]);
-    
     return true;
   } catch (error) {
     console.warn(`Error performing swipe from (${start.x}, ${start.y}) to (${end.x}, ${end.y}):`, error.message);

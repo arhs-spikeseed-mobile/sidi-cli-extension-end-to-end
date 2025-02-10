@@ -117,7 +117,7 @@ npm install
 To download the latest app version, use:
 
 ```bash
-npm e2e:download_last_apps_with codemagic $MY_TOKEN $APP_ID acceptance/1.0.0 
+npm e2e:download_last_apps_with codemagic $MY_TOKEN $APP_ID acceptance/1.0.0  
 ```
 
 - `<provider>` → The CI/CD platform to use (e.g., `codemagic` or `bitrise`).

@@ -14,9 +14,21 @@ exports.commonBaseConfig = {
   app: process.env.BS_PATH || 'NOT-SET',
   updateJob: false,
   exclude: [],
+  services: [
+    [
+      'browserstack',
+      {
+        testObservability: process.env.BS_TEST_OBSERVABILITY,
+        testObservabilityOptions: {
+          projectName: process.env.PROJECT_NAME,
+          buildName: process.env.BUILD_BRANCH + " - " + process.env.TEAM_NAME,
+        }
+      }
+    ]
+  ],
   
   // Logging and timeout configurations
-  logLevel: 'info',
+  logLevel: 'trace',
   coloredLogs: true,
   baseUrl: '',
   waitforTimeout: parseInt(process.env.WAIT_FOR_TIMEOUT), // Maximum time to wait for an element

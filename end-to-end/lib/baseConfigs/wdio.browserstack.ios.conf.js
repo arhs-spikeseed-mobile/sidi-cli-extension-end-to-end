@@ -28,8 +28,8 @@ exports.config = {
                 video: true,
                 interactiveDebugging: true
             },
-            "appium:platformVersion": "16.0",
-            "appium:deviceName": "iPhone 14 Pro Max",
+            'appium:platformVersion': '16.0|17.0',
+            'appium:deviceName': 'iPhone 14 Pro Max|iPhone 15 Pro Max',
             "appium:app": process.env.BS_PATH,
             "appium:settings[snapshotMaxDepth]": "62",
             "appium:settings[customSnapshotTimeout]": "50000",
@@ -38,6 +38,8 @@ exports.config = {
             "appium:nativeWebScreenshot": true,
             "appium:newCommandTimeout": 3600,
             "appium:connectHardwareKeyboard" : true,
+            "appium:includeSafariInWebviews": true,
+            "appium:fullContextList": true,
             "proj:options": {
                 "build_url": process.env.BUILD_URL,
                 "build_number": process.env.BUILD_NUMBER,
