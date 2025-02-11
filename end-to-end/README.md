@@ -3,7 +3,7 @@
 
 Imagine a world where setting up end-to-end testing for mobile apps is not a daunting task but an effortless, streamlined experience. **End-to-End testing starter pack** makes this dream a reality, empowering developers and teams to build robust, cross-platform test environments with minimal effort.
 
-**End-to-End** simplifies **mobile end-to-end (E2E) testing** with a streamlined collection of scripts and configurations. Designed for both **local usage** and seamless integration with **sidi-cli**, it enables you to quickly set up a robust testing environment.
+**End-to-End testing starter pack** simplifies **mobile end-to-end (E2E) testing** with a streamlined collection of scripts and configurations. Designed for both **local usage** and seamless integration with **sidi-cli**, it enables you to quickly set up a robust testing environment.
 
 This starter pack leverages **WebDriverIO (WDIO)** with **Appium** as its core stack, allowing you to write test scripts in **TypeScript (TS)**. With a single codebase, you can efficiently cover **iOS** and **Android** platforms, eliminating the need for separate, fully native implementations.
 
