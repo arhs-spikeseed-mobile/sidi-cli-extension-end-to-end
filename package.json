@@ -6,6 +6,7 @@
     "e2e:proj:install": "cd end-to-end && npm install",
     "e2e:proj:download_last_apps_with": "cd end-to-end && npm run e2e:proj:download_last_apps_with codemagic $YOUR_CM_TOKEN $YOUR_CM_APP_ID",
     "e2e:browserstack:run:local": "cd end-to-end && npm run e2e:browserstack:run:local",
+    "e2e:browserstack:run:local:report_html_pdf": "cd end-to-end && npm run e2e:browserstack:run:local:report_html_pdf",
     "e2e:simulator:run:local": "cd end-to-end && npm run e2e:simulator:run:local",
     "e2e:simulator:ios_list": "cd end-to-end && npm run e2e:simulator:ios_list",
     "e2e:simulator:android_list": "cd end-to-end && npm run e2e:simulator:android_list",

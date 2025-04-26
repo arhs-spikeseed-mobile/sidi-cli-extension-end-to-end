@@ -1,6 +1,6 @@
 {
   "name": "sidi-cli-extension-end-to-end",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "repository": "https://github.com/arhs-spikeseed-mobile/sidi-cli-extension-end-to-end.git",
   "author": "Olivier Demolliens",
@@ -12,6 +12,7 @@
     "dev:prettier:fix": "prettier --config ./.prettierrc --write --check \"../__e2e__/**/*.ts\"",
     "e2e:browserstack:software:browserstacklocal": "sh lib/scripts/browserstack/e2e.browserstack.start_browserstacklocal.sh",
     "e2e:browserstack:run:local": "sh lib/scripts/browserstack/e2e.browserstack.local_run_script.sh browserstack",
+    "e2e:browserstack:run:local:report_html_pdf": "node lib/scripts/prepareReports.js",
     "e2e:simulator:run:local": "sh lib/scripts/browserstack/e2e.browserstack.local_run_script.sh simulator",
     "e2e:simulator:ios_list": "xcrun simctl list devices | grep -v '(unavailable' ",
     "e2e:simulator:android_list": "emulator -list-avds",
@@ -38,12 +39,13 @@
     "appium-uiautomator2-driver": "^3.9.5",
     "appium-xcuitest-driver": "^7.34.1",
     "browserstack-local": "^1.5.5",
+    "https-proxy-agent": "^7.0.6",
     "prettier": "^3.4.2",
+    "sidi-cli": "3.1.0",
     "ts-node": "10.9.2",
     "typescript": "5.7.2",
-    "wdio-html-nice-reporter": "^8.1.7",
-    "wdio-performancetotal-service": "3.1.0",
     "undici": "5.28.4",
-    "sidi-cli": "3.1.0"
+    "wdio-html-nice-reporter": "^8.1.7",
+    "wdio-performancetotal-service": "3.1.0"
   }
 }

@@ -3,6 +3,7 @@ const path = require("path");
 const minimatch = require("minimatch");
 
 (async () => {
+
     const ReportAggregator = (await import('wdio-html-nice-reporter/lib/ReportAggregator.js')).default;
 
     // Parse command-line arguments
@@ -50,7 +51,17 @@ const minimatch = require("minimatch");
 
         const htmlReportFile = path.resolve(TEMP_PATH, 'merged-report-no-screenshots.html');
         const pdfFile = path.resolve(TEMP_PATH, `${reportName}-no-screenshots.pdf`);
-        let options = ['--no-sandbox', '--disable-gpu', '--disable-extensions', '--enable-chrome-browser-cloud-management'];
+        let options = [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-gpu',
+            '--disable-dev-shm-usage',
+            '--disable-software-rasterizer',
+            '--single-process',
+            '--no-zygote',
+            '--disable-extensions',
+            '--enable-chrome-browser-cloud-management'
+          ];
 
         await printPdf(htmlReportFile, pdfFile, options);
         console.log("✅ PDF generated successfully:", pdfFile);

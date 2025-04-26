@@ -117,7 +117,7 @@ npm install
 To download the latest app version, use:
 
 ```bash
-npm e2e:download_last_apps_with codemagic $MY_TOKEN $APP_ID acceptance/1.0.0  
+yarn e2e:download_last_apps_with codemagic $MY_TOKEN $APP_ID acceptance/1.0.0  
 ```
 
 - `<provider>` → The CI/CD platform to use (e.g., `codemagic` or `bitrise`).
@@ -136,7 +136,7 @@ If you are not using Codemagic or Bitrise, you will need to manually manage your
 If you need to launch BrowserStack Local, ensure `.env.local` is correctly configured, then run:
 
 ```bash
-npm e2e:browserstack:software:browserstacklocal $BS_ACCESS_KEY
+yarn e2e:browserstack:software:browserstacklocal $BS_ACCESS_KEY
 ```
 
 ### **Run the local test prompt**
@@ -144,7 +144,7 @@ npm e2e:browserstack:software:browserstacklocal $BS_ACCESS_KEY
 To trigger an interactive prompt for selecting the platform, and script(s), use:
 
 ```bash
-npm e2e:browserstack:run:local:prompt
+yarn e2e:browserstack:run:local:prompt
 ```
 
 ---
@@ -154,7 +154,7 @@ npm e2e:browserstack:run:local:prompt
 Run a specific script on **Android** in the acceptance environment:
 
 ```bash
-npm e2e:browserstack:run:local android "**/my_test.e2e.ts"
+yarn e2e:browserstack:run:local android "**/my_test.e2e.ts"
 ```
 
 ---
@@ -164,7 +164,7 @@ npm e2e:browserstack:run:local android "**/my_test.e2e.ts"
 Run a specific script on **iOS** in the acceptance environment:
 
 ```bash
-npm e2e:browserstack:run:local ios "**/my_test.e2e.ts"
+yarn e2e:browserstack:run:local ios "**/my_test.e2e.ts"
 ```
 
 ---
@@ -174,7 +174,7 @@ npm e2e:browserstack:run:local ios "**/my_test.e2e.ts"
 Run a specific script on **iOS/Android** in the acceptance environment:
 
 ```bash
-npm e2e:browserstack:run:local both "**/my_test.e2e.ts"
+yarn e2e:browserstack:run:local both "**/my_test.e2e.ts"
 ```
 
 ---
@@ -184,7 +184,17 @@ npm e2e:browserstack:run:local both "**/my_test.e2e.ts"
 To trigger an interactive prompt on a simulator, and script(s), use:
 
 ```bash
-npm e2e:simulator:run:local android "**/my_test.e2e.ts"
+yarn e2e:simulator:run:local android "**/my_test.e2e.ts"
+```
+
+---
+
+### **Generate html/pdf report**
+
+To generate a reports based on last runs
+
+```bash
+yarn e2e:browserstack:run:local:report_html_pdf
 ```
 
 ---
@@ -199,7 +209,7 @@ To execute **multiple scripts** or use **wildcards** for pattern matching, follo
 To run two specific scripts:
 
 ```bash
-npm e2e:browserstack:run:local ios "['**/my_test1.e2e.ts', '**/my_test2.e2e.ts']"
+yarn e2e:browserstack:run:local ios "['**/my_test1.e2e.ts', '**/my_test2.e2e.ts']"
 ```
 
 #### **Example 2: Use a wildcard to match a pattern**
@@ -207,12 +217,12 @@ You can use wildcards to select multiple scripts with similar names. For example
 
 - To run a single script:
   ```bash
-  npm e2e:browserstack:run:local both "**/my_test.e2e.ts"
+  yarn e2e:browserstack:run:local both "**/my_test.e2e.ts"
   ```
 
 - To run **all scripts starting with `my_`**:
   ```bash
-  npm e2e:browserstack:run:local android "**/my_*.e2e.ts"
+  yarn e2e:browserstack:run:local android "**/my_*.e2e.ts"
   ```
 
 This is especially useful for running batches of related test scripts without needing to list each file individually.

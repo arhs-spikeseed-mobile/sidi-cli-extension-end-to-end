@@ -1,5 +1,9 @@
 import { MockResponse } from 'react-native-netwatch/lib/Components/Mocking/utils';
 import { driver } from '@wdio/globals'
+import { error } from 'console';
+import fetch from 'node-fetch';
+import {HttpsProxyAgent } from 'https-proxy-agent';
+const apiTestdata = require('../../__e2e__/common/data/APITestdata.json');
 
 /**
 * Enum representing different wait durations in milliseconds.
@@ -435,6 +439,7 @@ export async function restartApp() {
   await driver.terminateApp(id);
   await wait(Wait.WAIT_SHORT);
   await driver.activateApp(id);
+  
 }
 
 /**
@@ -442,9 +447,13 @@ export async function restartApp() {
 * @returns {Promise<void>}
 */
 export async function closeApp() {
-  const id = isAndroid() ? driver.capabilities.appPackage : driver.capabilities.bundleId;
-  await wait(Wait.WAIT_MEDIUM);
-  await driver.terminateApp(id);
+  try {// @ts-ignore
+    driver.isAndroid ? await driver.terminateApp(driver.capabilities.appPackage)
+      // @ts-ignore  
+      : await driver.execute('mobile: terminateApp', { bundleId: driver.capabilities.bundleId })
+  } catch (e) {
+    console.error("Not able to kill the app: " + e);
+  }
 }
 
 /**
@@ -453,6 +462,7 @@ export async function closeApp() {
 * @returns {Promise<void>}
 */
 export async function openDeepLink2(url: string) {
+  // @ts-ignore
   const id = isAndroid() ? driver.capabilities.appPackage : driver.capabilities.bundleId;
   
   await wait(Wait.WAIT_MEDIUM);
@@ -489,20 +499,23 @@ export async function openDeepLink2(url: string) {
 * @returns {Promise<void>}
 */
 export async function openDeepLink(url: string) {
+  // @ts-ignore
   const id = isAndroid() ? driver.capabilities.appPackage : driver.capabilities.bundleId;
   
   await wait(Wait.WAIT_MEDIUM);
-  await background(2);
-  
+  await background(null);
+
+  await wait(Wait.WAIT_SHORT);
   if (isiOS()) {
-    await driver.execute('mobile: launchApp', { bundleId: 'com.apple.mobilesafari' });
+    // await driver.execute('mobile: launchApp', { bundleId: 'com.apple.mobilesafari' });
+    await driver.activateApp('com.apple.mobilesafari');
     
     const urlTabBarItemTitle = `type == "XCUIElementTypeTextField" && name CONTAINS "TabBarItemTitle"`;
     const urlFieldSelector = 'type == "XCUIElementTypeTextField" && name CONTAINS "URL"';
     const urlTab = await $(`-ios predicate string:${urlTabBarItemTitle}`);
     const urlField = await $(`-ios predicate string:${urlFieldSelector}`);
     
-    await urlTab.waitForDisplayed({ timeout: 15000 });
+    await urlTab.waitForDisplayed();
     await urlTab.click();
     
     await urlField.setValue(`${url}\uE007`);
@@ -587,6 +600,7 @@ export async function typeKey(text: string) {
 * @param url 
 */
 export async function openUrlInBrowser(url: string) {
+  // @ts-ignore
   const id = isAndroid() ? driver.capabilities.appPackage : driver.capabilities.bundleId;
   
   await wait(Wait.WAIT_MEDIUM);
@@ -628,7 +642,7 @@ export async function switchToWebviewContext() {
       if (!contexts || contexts.length === 0) {
         throw new Error('No contexts found');
       } else {
-        annotate(`Available contexts: ${JSON.stringify(contexts, null, 2)}`);
+        await annotate("Available contexts: ${JSON.stringify(contexts, null, 2)}");
         for (const context of contexts) {
           if (isAndroid()) {
             if (typeof context === 'string' && context.includes('WEBVIEW')) {
@@ -646,14 +660,14 @@ export async function switchToWebviewContext() {
       
       if (webViewContext) {
         await driver.switchContext(webViewContext);
-        annotate(`Switched to webview context: ${webViewContext}`);
+        await annotate("Switched to webview context: ${webViewContext}");
         
         const currentContext = await driver.getContext();
         if (currentContext === webViewContext) {
-          annotate(`Successfully switched to webview context: ${webViewContext}`);
+          await annotate("Successfully switched to webview context: ${webViewContext}");
           break;
         } else {
-          annotate(`Context switch verification failed. Retrying...`);
+          annotate("Context switch verification failed. Retrying...");
         }
       }
       attempts++;
@@ -700,13 +714,26 @@ export async function selectWebviewHtmlElementById(id: string) {
  * await element.click();
  */
 export async function selectWebviewHtmlElementByDataCy(dataCy: string) {
-  return await driver.$(`[data-cy="${dataCy}"]`);
+  return await $(`[data-cy="${dataCy}"]`);
 }
+
+/**
+ * 
+ * @param data_testid 
+ * @returns 
+ */
+export async function selectWebviewHtmlElementByDataTestId(data_testid: string) {
+  return await $(`[data-testid="${data_testid}"]`);
+}
+
 
 /**
 * Function to verify toaster message
 */
 export async function thenShouldbeAbleToSeeToastMsg(value:string,functionName:any) {
+  if(driver.isAndroid){
+    await driver.takeScreenshot();
+  }else{
   let isDisplayed = false;
   let count = 0;
   do {
@@ -716,6 +743,7 @@ export async function thenShouldbeAbleToSeeToastMsg(value:string,functionName:an
     if (pageSource.includes(value)) {
       isDisplayed = true;
       await annotate(value);
+      await driver.takeScreenshot();
       break;
     }
     count++;
@@ -724,4 +752,290 @@ export async function thenShouldbeAbleToSeeToastMsg(value:string,functionName:an
   if (isDisplayed == false) {
     throw new Error('Toaster message is not displayed');
   }
+}
+}
+
+/**
+ * Function to switch to NATIVE APP
+ */
+export async function switchToNativeContext() {
+  try{
+  await driver.switchContext('NATIVE_APP');
+  await wait(Wait.WAIT_MEDIUM);
+  await annotate("Switched to Native Context");
+  }catch(e){
+    console.error("Error while switching to Native Context: " + e);
+  }
+}
+
+/**
+* Scrolls vertically until the element is fully visible in the center of the screen.
+* @param element - The WebdriverIO element to bring into view.
+* @param direction - 'up' (default) or 'down' to specify scroll direction.
+* @param maxScrolls - Maximum number of scroll attempts (default 10).
+*/
+export async function scrollToElementUntilVisible(
+  element: WebdriverIO.Element | ChainablePromiseElement,
+  direction: "up" | "down" = "up",
+  maxScrolls: number = 10
+): Promise<void> {
+  const isIOS = driver.isIOS;
+  let scrollAttempts = 0;
+
+  while (!(await element.isDisplayed()) && scrollAttempts < maxScrolls) {
+    const { height, width } = await driver.getWindowRect();
+
+    const startX = width / 2;
+    const startY = direction === "up" ? height * 0.7 : height * 0.3;
+    const endY = direction === "up" ? height * 0.3 : height * 0.7;
+
+    await driver.performActions([
+      {
+        type: "pointer",
+        id: "finger1",
+        parameters: { pointerType: "touch" },
+        actions: [
+          { type: "pointerMove", duration: 0, x: startX, y: startY },
+          { type: "pointerDown", button: 0 },
+          { type: "pause", duration: 100 },
+          { type: "pointerMove", duration: 500, x: startX, y: endY },
+          { type: "pointerUp", button: 0 },
+        ],
+      },
+    ]);
+
+    await driver.pause(500);
+    scrollAttempts++;
+  }
+
+  if (await element.isDisplayed()) {
+    await element.scrollIntoView();
+  } else {
+    throw new Error("Element not found after scrolling.");
+  }
+}
+
+/**
+* Scrolls to the very end of the current page or view.
+* Works for both Android and iOS.
+*/
+export async function scrollToEnd(): Promise<void> {
+  const MAX_SCROLL_ATTEMPTS = 15;
+  let previousPageSource = "";
+  let scrollAttempts = 0;
+  let unchangedScrollCount = 0;
+ 
+  while (scrollAttempts < MAX_SCROLL_ATTEMPTS) {
+    const { height, width } = await driver.getWindowRect();
+    const startX = width / 2;
+    const startY = height * 0.75;
+    const endY = height * 0.35; 
+ 
+    await driver.performActions([
+      {
+        type: "pointer",
+        id: "finger1",
+        parameters: { pointerType: "touch" },
+        actions: [
+          { type: "pointerMove", duration: 0, x: startX, y: startY },
+          { type: "pointerDown", button: 0 },
+          { type: "pause", duration: 100 },
+          { type: "pointerMove", duration: 500, x: startX, y: endY },
+          { type: "pointerUp", button: 0 },
+        ],
+      },
+    ]);
+ 
+    await driver.pause(500);
+    scrollAttempts++;
+ 
+    const currentPageSource = await driver.getPageSource();
+    if (currentPageSource === previousPageSource) {
+      unchangedScrollCount++; 
+    } else {
+      unchangedScrollCount = 0;
+    }
+ 
+    if (unchangedScrollCount >= 2) {
+      console.log("Reached the true end of the page.");
+      break;
+    }
+ 
+    previousPageSource = currentPageSource;
+  }
+}
+
+/**
+ * Function to send push notification
+ * @param payload - payload to send push notification
+ * @param resource - resource to send push notification
+ */
+export async function fetchWithPayload(_url: any, _method: any, _headers: any, _payload: any, maxRetries = 3, retryDelay = 3000) {
+  const url = _url;
+  const options = {
+    method: _method,
+    headers: _headers,
+    body: JSON.stringify(_payload),
+    // agent: new HttpsProxyAgent(process.env.GLOBAL_AGENT_HTTPS_PROXY),
+  };
+  for (let retryCount = 1; retryCount <= maxRetries; retryCount++) {
+    try {
+      console.log(`Fetching URL: ${url} (Attempt ${retryCount})`);
+      const response = await fetch(url, options);
+      if (response.ok) {
+        console.log(`✅ Successful response from ${url}`);
+        return response.json();
+      } else {
+        console.log(`🚨 Response error: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      console.log(`❌ Attempt ${retryCount} failed: ${error.message}`);
+    }
+    if (retryCount < maxRetries) {
+      console.log(`🚨 Retrying in ${retryDelay / 1000} seconds...`);
+      await new Promise((resolve) => setTimeout(resolve, retryDelay));
+    }
+  }
+  throw new Error(`🚨 Failed to fetch data from ${url} after ${maxRetries} attempts.`);
+};
+
+/**
+  * Function to send push notification
+  * @param payload - payload to send push notification
+  * @param resource - resource to send push notification
+  */
+export async function fetchWithPayloadWithoutProxy(_url: any, _method: any, _headers: any, _payload: any, maxRetries = 3, retryDelay = 3000) {
+  const url = _url;
+  const options = {
+    method: _method,
+    headers: _headers,
+    body: JSON.stringify(_payload)
+  };
+  for (let retryCount = 1; retryCount <= maxRetries; retryCount++) {
+    try {
+      console.log(`Fetching URL: ${url} (Attempt ${retryCount})`);
+      const response = await fetch(url, options);
+      if (response.ok) {
+        console.log(`✅ Successful response from ${url}`);
+        console.log(`Response Value :${response.status}`)
+        return response;
+      } else {
+        console.log(`🚨 Response error: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      console.log(`❌ Attempt ${retryCount} failed: ${error.message}`);
+    }
+    if (retryCount < maxRetries) {
+      console.log(`🚨 Retrying in ${retryDelay / 1000} seconds...`);
+      await new Promise((resolve) => setTimeout(resolve, retryDelay));
+    }
+  }
+  throw new Error(`🚨 Failed to fetch data from ${url} after ${maxRetries} attempts.`);
+};
+
+/**
+ * Function to change device network
+ */
+export async function update_network(){
+  const sessionId = driver.sessionId;
+  const url =`${apiTestdata.browserStackBaseUrl}/app-automate/sessions/${sessionId}/update_network.json`;
+  const headers ={
+    'Content-Type': 'application/json',
+    'Authorization': 'Basic '+Buffer.from(`${process.env.BS_USER}:${process.env.BS_KEY}`).toString('base64'),
+  };
+  const payload = JSON.stringify({
+    networkProfile:'no-network',
+  });
+
+  try{
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: headers,
+      body: payload,
+      agent: new HttpsProxyAgent(process.env.HTTPS_PROXY),
+    });
+    if(!response.ok){
+      throw new Error(`Failed to update network profile: ${response.status} ${response.statusText}`);
+    }
+    const responseData = await response.json();
+    annotate("Network profile updated successfully:"+JSON.stringify(responseData));
+  }catch(error){
+    throw new error(`Error updating network profile: ${error.message}`);
+  }
+}
+
+/**
+     * Locks the device and verifies its locked state
+     * @param driver WebdriverIO browser instance
+     * @param timeout Optional timeout in seconds to wait for the device to lock (default is 10 seconds)
+     * @returns Promise<boolean> indicating whether the device was successfully locked
+     */
+export async function lockDevice(driver: WebdriverIO.Browser, timeout: number = 10): Promise<boolean> {
+  try {
+      if(isAndroid()) {
+          await driver.lock();
+          const isLocked = await driver.isLocked();
+          if(!isLocked) {
+              throw new Error('Device is not locked');
+          }
+      } else {
+          await driver.execute('mobile: lock');
+          const isLocked = await driver.execute('mobile: isLocked');
+          if(!isLocked) {
+              throw new Error('Device is not locked');
+          }
+      }
+      return true;
+  } catch (error) {
+      console.error(`Error occurred while trying to lock the device: ${error}`);
+      return false;
+  }
+}
+
+/**
+* Unlocks the device and verifies its unlocked state
+* @param driver WebdriverIO browser instance
+* @param timeout Optional timeout in seconds to wait for the device to unlock (default is 10 seconds)
+* @returns Promise<boolean> indicating whether the device was successfully unlocked
+*/
+export async function unlockDevice(driver: WebdriverIO.Browser, timeout: number = 10): Promise<boolean> {
+  try {
+      if(isAndroid()) {
+          await driver.unlock();
+          await driver.waitUntil(
+              async () => !(await driver.isLocked()),
+              {
+                  timeout: timeout * 1000,
+                  timeoutMsg: 'Device failed to unlock within timeout',
+              }
+          );
+      } else {
+          await driver.execute('mobile: unlock');
+          await driver.execute('mobile: waitUntil', [
+              {
+                  condition: 'mobile: isLocked',
+                  timeout: timeout * 1000,
+                  timeoutMsg: 'Device failed to unlock within timeout',
+              },
+          ]);
+      }
+      return true;
+  } catch (error) {
+      console.error(`Error occurred while trying to unlock the device: ${error}`);
+      return false;
+  }
+}
+
+/**
+ * Function to update location services
+ */
+export async function updateLocationServices() {
+  if (driver.isIOS) {
+    await driver.execute(
+      `browserstack_executor: { "action": "updateIosDeviceSettings", "arguments": { "LocationServices" : "OFF" }}`
+    );
+  } else {
+    await driver.toggleLocationServices();
+  }
+
 }

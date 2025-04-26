@@ -133,29 +133,97 @@ const fetchWithRetry = async (url, options = {}, maxRetries = 3, retryDelay = 30
 };
 
 /**
-* Fetches build artifacts from CodeMagic.
+* Fetches build artifacts from CodeMagic with cursor pagination and retry logic, ensuring it checks up to 5 pages.
 *
 * @returns {Promise<object[]>} An array of artifacts or an empty array if none are found.
 */
 const getCodeMagicArtifacts = async () => {
   log('Fetching artifacts from CodeMagic...');
-  const url = `https://api.codemagic.io/builds?appId=${APP_ID}&workflowId=${APP_WORKFLOW}&branch=${APP_BRANCH}&status=finished`;
+
+  let url;
   const options = {
     method: 'GET',
-    headers: {
-      'x-auth-token': CODEMAGIC_TOKEN,
-    },
+    headers: {}
   };
-  const response = await fetchWithRetry(url, options);
-  log('CodeMagic API response received.');
-  if (response && response.builds && response.builds.length > 0) {
-    const lastBuild = response.builds[0];
-    log('✅ CodeMagic artifacts list retrieved successfully.');
-    return lastBuild.artefacts || [];
+
+  // Check if CODEMAGIC_TOKEN starts with "dashboards/"
+  if (CODEMAGIC_TOKEN.startsWith("dashboards/")) {
+    const dashboardId = CODEMAGIC_TOKEN.split('/')[1]; // Extract dashboard ID
+    url = `https://codemagic.io/api/v3/dashboards/${dashboardId}/builds?page_size=100`;
+  } else {
+    url = `https://api.codemagic.io/builds?appId=${APP_ID}&workflowId=${APP_WORKFLOW}&branch=${APP_BRANCH}&status=finished`;
+    options.headers['x-auth-token'] = CODEMAGIC_TOKEN; // Auth token for the old endpoint
   }
-  log('🚨 No builds or artifacts found on CodeMagic.');
-  return [];
+
+  let allArtifacts = [];
+  let retries = 0;
+  let cursor = null;
+
+  // Loop through pagination, retry up to 5 pages if no results are found initially
+  while (retries < 10 && cursor !== undefined) {
+    let paginatedUrl = cursor ? `${url}&cursor=${cursor}` : url;
+
+    const response = await fetchWithRetry(paginatedUrl, options);
+    log('CodeMagic API response received.');
+
+    if (response) {
+      let artifactsInPage = 0;
+
+      if (url.includes("dashboards/")) {
+        if (response.data && response.data.length > 0) {
+          const filteredBuilds = response.data.filter(build => build.branch === APP_BRANCH);
+          
+          if (filteredBuilds.length > 0) {
+            const lastBuild = filteredBuilds[0];
+            log(`✅ Found ${lastBuild.artifacts.length} artifact(s) in this page.`);
+            artifactsInPage = lastBuild.artifacts.length;
+            allArtifacts = allArtifacts.concat(lastBuild.artifacts || []);
+            cursor = response.cursor;  // Set cursor for the next page
+
+            // Stop pagination if artifacts are found
+            if (artifactsInPage > 0) {
+              log(`ℹ️ Stopping further fetches as the branch ${APP_BRANCH} artifacts have been found.`);
+              break;
+            }
+          }
+        }
+      } else {
+        if (response.builds && response.builds.length > 0) {
+          const lastBuild = response.builds[0];
+          log(`✅ Found ${lastBuild.artefacts.length} artifact(s) in this page.`);
+          artifactsInPage = lastBuild.artefacts.length;
+          allArtifacts = allArtifacts.concat(lastBuild.artefacts || []);
+          cursor = response.cursor;
+
+          // Stop pagination if artifacts are found
+          if (artifactsInPage > 0) {
+            log(`ℹ️ Stopping further fetches as the branch ${APP_BRANCH} artifacts have been found.`);
+            break;
+          }
+        }
+      }
+
+      log(`Total artifacts retrieved so far: ${allArtifacts.length}`);
+
+      // Retry pagination if no artifacts were found on this page
+      if (cursor === undefined || allArtifacts.length >= 500) {
+        log(`🚨 Stopping pagination. Total artifacts: ${allArtifacts.length}.`);
+        break;
+      }
+
+      retries++;
+      log(`ℹ️ Retries left: ${5 - retries}`);
+    }
+  }
+
+  if (allArtifacts.length === 0) {
+    log('🚨 No builds or artifacts found on CodeMagic.');
+  }
+  
+  return allArtifacts;
 };
+
+
 
 /**
 * Fetches build artifacts from Bitrise.
@@ -220,9 +288,9 @@ const downloadArtifact = async (artifact) => {
   if (process.env.HTTPS_PROXY) {
     options.dispatcher = new ProxyAgent(process.env.HTTPS_PROXY);
   }
-  
-  log(`⬇️  Downloading artifact: ${artifact.name}`);
-  const response = await fetch(artifact.url, options);
+
+  log(`⬇️  Downloading artifact: ${artifact.name || artifact.short_lived_download_url}`);
+  const response = await fetch(artifact.url || artifact.short_lived_download_url, options);
   
   if (!response.ok) {
     throw new Error(`Failed to download ${artifact.name}: ${response.statusText}`);
